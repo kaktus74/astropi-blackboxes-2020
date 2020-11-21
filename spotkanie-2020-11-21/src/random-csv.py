@@ -1,7 +1,7 @@
 import csv
 import random
 
-#TODO-4 Zamien zahardcodowaną ścieżkę na scieżkę ../data względem pliku źródłowego
+#TODO-4 Zamien zahardcodowaną ścieżkę na scieżkę ../data/random.csv względem pliku źródłowego
 csv_sciezka = '/home/kaktus74/astropi2021/astropi-blackboxes-2020/spotkanie-2020-11-21/data/random.csv'
 
 
