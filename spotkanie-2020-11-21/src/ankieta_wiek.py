@@ -50,14 +50,12 @@ def srednia(tab):
 def ankieta():
     liczba_os = podaj_liczbe('Ile osob? ')
     lata = []
-    n = 0
     
     #TODO: zmodyfikuj kod tak, aby zamiast while uzyc petli for
-    while n < liczba_os:
+    for n in range(0,liczba_os):
         #TODO-3: zmodyfikuj kod tak, zeby system wyswietlil nr osoby o ktorej wiek pyta
-        wiek = podaj_wiek('Ile lat? ')
+        wiek = podaj_wiek('Ile lat (osoba {0})? '.format(n+1))
         lata.append(wiek)
-        n = n + 1
 
     sredniaw = srednia(lata)
     print(sredniaw)

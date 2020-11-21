@@ -5,7 +5,7 @@ import ankieta_wiek as aw
 class AnkietaWiekTest(unittest.TestCase):
     
     def test_czy_liczba(self):
-        self.assertEqual(aw.czy_liczba(None), False)
+        self.assertEqual(wynik, False)
         self.assertEqual(aw.czy_liczba(''), False)
         self.assertEqual(aw.czy_liczba('ala'), False)
         self.assertEqual(aw.czy_liczba('-1'), True)
@@ -20,3 +20,4 @@ class AnkietaWiekTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
