@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
+import datetime as dt
 
 csv_file = os.path.dirname(__file__) + "/../data/temperatura.csv"
 print(csv_file)
@@ -12,7 +13,10 @@ dane.index = pd.to_datetime(dane.index, format='%Y-%m-%dT%H:%M:%S.%f')
 czas = dane.index
 temperatura = dane['temperatura']
 
-print(czas)
-print(temperatura)
+print(dane)
 
-plt.plot_date(czas, temperatura)
+#print(czas)
+#print(temperatura)
+
+plt.plot(temperatura)
+plt.show()
