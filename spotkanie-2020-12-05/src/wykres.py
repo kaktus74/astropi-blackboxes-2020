@@ -8,7 +8,7 @@ print(csv_file)
 
 
 dane = pd.read_csv(csv_file, sep=';', index_col='czas')
-dane.index = pd.to_datetime(dane.index, format='%Y-%m-%dT%H:%M:%S.%f')
+dane.index = pd.to_datetime(dane.index, format='%d/%m/%Y %H:%M:%S.%f')
 
 czas = dane.index
 temperatura = dane['temperatura']
