@@ -22,7 +22,7 @@ def zrob_pomiar(sense):
         pioro.writerow(tytuly)
         
         for i in range(1,41):
-            czas_dzialania = i*0.23
+            czas_dzialania = i*0.24
             czas = datetime.now()
             #(time.localtime.tm_hour(),time.localtime.tm_min(),time.localtime.tm_sec())
             temp = sense.temperature
