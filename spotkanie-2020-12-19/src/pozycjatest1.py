@@ -17,7 +17,7 @@ iss = readtle(imie,p1,p2)
 
 def zapisuj():
     
-    csv_sciezka = os.path.dirname(__file__) + "/data/pozycjatest1.csv"
+    csv_sciezka = os.path.dirname(__file__) + "/../data/pozycjatest1.csv"
 
     with open(csv_sciezka, 'w') as plik:
         pioro = csv.writer(plik,delimiter=';',quoting=csv.QUOTE_MINIMAL)
@@ -31,5 +31,6 @@ def zapisuj():
             sleep(1)
             wiersz = (i, czas.strftime('%Y/%m/%d %H:%M:%S.%f'), iss.sublat / degree, iss.sublong / degree)
             pioro.writerow(wiersz)
+            print(wiersz)
 
 zapisuj()
