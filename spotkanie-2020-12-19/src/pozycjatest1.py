@@ -2,9 +2,10 @@ from ephem import readtle, degree
 import time
 import os
 import csv
-from datetime import datetime
+from datetime import datetime, timezone
 from time import sleep
 from dateutil.tz import tz
+
 
 
 imie = "ISS zayra"
@@ -26,7 +27,8 @@ def zapisuj():
         pioro.writerow(tytuly)
         
         for i in range(1,11):
-            iss.compute()
+            now_utc = datetime.now(timezone.utc)
+            iss.compute(now_utc)
             czas = datetime.now(tz.tzutc())
             sleep(1)
             wiersz = (i, czas.strftime('%Y/%m/%d %H:%M:%S.%f'), iss.sublat / degree, iss.sublong / degree)
