@@ -16,5 +16,13 @@ lat = iss.sublat
 print(type(lat))
 print(float(lat))
 print(str(lat))
+print(lat)
+
+# -17:39:50.7
+# EXIF: 
+# '17/1,39/1,507/10'
+# S
+
+
       
 
