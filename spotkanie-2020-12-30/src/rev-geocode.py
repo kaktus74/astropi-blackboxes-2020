@@ -17,4 +17,10 @@ pos = (iss.sublat / degree, iss.sublong / degree)
 #pos = (69.358026, 88.136941)
 
 location = rg.search(pos, mode=1)
-print(location[0]['name'])
+for el in location[0]:
+    print(el)
+    print(type(el))
+
+print(type(location))
+print(location)
+print(len(location))
