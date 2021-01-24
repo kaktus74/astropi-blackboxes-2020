@@ -19,13 +19,23 @@ def check_position ():
     iss.compute()
     sublat = str(iss.sublat)
     sublon = str(iss.sublong)
+    print (sublat, sublon)
     return (sublat, sublon)
 
-def format_position(lat, lon):
-    return ['lat', 'latref', 'lon', 'lonref']
+def format_position(value, lon_or_lat):
+    value = value.split(':')
+    if int(value[0]) >= 0:
+        direction_ref = lon_or_lat [0]
+    else:
+        direction_ref = lon_or_lat[1]
+    value_formatted = value[0]+'/1,'+value[1]+'/1,'+''.join(value[2].split('.'))+'/10'
+    return [value_formatted, direction_ref]
 
-def tales ():
-    return 6
+
+def time_over_fov ():
+    overlap_factor = 1
+    time = overlap_factor * 23.43
+    return time
 
 def take_photo (gpslat, gpslatref, gpslon, gpslonref, n, tz, cam, dirpath):
     now = datetime.now(tz)
@@ -54,7 +64,7 @@ else:
     expected = start + timedelta(seconds = 10800) #10800 s = 3 h
 #TODO uruchamanie programu w trybie testowym
 def box(camera):
-    x = tales()
+    x = time_over_fov()
     i = 1
     print ('file: ', __file__)
     photos_path = os.path.dirname (os.path.realpath(__file__))+'/Photos'
@@ -74,8 +84,11 @@ def box(camera):
         magnetic_field_m = measured_magnetic_field[3]
         save_to_csv (position_lat, position_lon, now, magnetic_field_x, magnetic_field_y, magnetic_field_z, magnetic_field_m)  
         if i%3 == 0:
-            formatted_position = format_position (position_lat, position_lon)
-            take_photo(formatted_position[0], formatted_position[1], formatted_position[2], formatted_position[3], i, timezone.utc, camera, photos_path) 
+            formatted_position_lat = format_position (position_lat, ['N', 'S'])
+            print (formatted_position_lat)
+            formatted_position_lon = format_position (position_lon, ['E', 'W'])
+            print(formatted_position_lon)
+            take_photo(formatted_position_lat[0], formatted_position_lat[1], formatted_position_lon[0], formatted_position_lon[1], i, timezone.utc, camera, photos_path) 
         sleep(x/3)
         i+=1
 
