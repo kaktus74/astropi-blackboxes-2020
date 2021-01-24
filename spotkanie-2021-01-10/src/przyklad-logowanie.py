@@ -2,7 +2,7 @@ from logzero import logger, logfile, loglevel
 
 
 
-loglevel(50)
+loglevel(1)
 
 def foo():
 
