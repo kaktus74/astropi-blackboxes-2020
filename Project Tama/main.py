@@ -2,6 +2,10 @@ from sense_hat import SenseHat
 from time import sleep
 from datetime import datetime, timezone, timedelta
 from ephem import readtle
+import sys
+import os
+from picamera import PiCamera
+import dateutil.tz as tz
 sense = SenseHat()
 #############################################################################
 name = 'ISS (ZARYA)'
@@ -17,11 +21,21 @@ def check_position ():
     sublon = str(iss.sublong)
     return (sublat, sublon)
 
+def format_position(lat, lon):
+    return ['lat', 'latref', 'lon', 'lonref']
+
 def tales ():
     return 6
 
-def take_photo(exif_gpslat, exif_gpslon):
-    sleep (3)
+def take_photo (gpslat, gpslatref, gpslon, gpslonref, n, tz, cam, dirpath):
+    now = datetime.now(tz)
+    cam.resolution = (1296, 972)
+    cam.exif_tags['GPS.GPSLatitude'] = gpslat
+    cam.exif_tags['GPS.GPSLatitudeRef'] = gpslatref
+    cam.exif_tags['GPS.GPSLongitude'] = gpslon
+    cam.exif_tags['GPS.GPSLongitudeRef'] = gpslonref                  
+    cam.capture(dirpath + '/{0:04}_{1}.jpg'.format(n, now.strftime('%Y_%m_%d_%H_%M')))
+
 def measure_magnetic_field (sense):
     sleep (0.5)
     return (1, 2, 3, 4)
@@ -33,11 +47,21 @@ def save_to_csv(pos_lat, pos_lon, time, mf_x, mf_y, mf_z, mf_m):
 
 # TODO datetime.now() + timedelta(sec
 start = datetime.now(timezone.utc)
-expected = start + timedelta(seconds = 10800) #10800 s = 3 h
+if len(sys.argv) > 1:
+    if sys.argv[1] == 'test':
+        expected = start + timedelta(seconds = 30)
+else:
+    expected = start + timedelta(seconds = 10800) #10800 s = 3 h
 #TODO uruchamanie programu w trybie testowym
-def box():
+def box(camera):
     x = tales()
     i = 1
+    print ('file: ', __file__)
+    photos_path = os.path.dirname (os.path.realpath(__file__))+'/Photos'
+    print (photos_path)
+    print ('does it exist: ', os.path.exists(photos_path))
+    if os.path.exists(photos_path) == False:            
+        os.mkdir(photos_path)
     while expected - timedelta(seconds = 10) > datetime.now(timezone.utc):    #TO DO ile czasu w zapasie?
         checked_position = check_position()
         position_lat = checked_position[0]
@@ -50,9 +74,11 @@ def box():
         magnetic_field_m = measured_magnetic_field[3]
         save_to_csv (position_lat, position_lon, now, magnetic_field_x, magnetic_field_y, magnetic_field_z, magnetic_field_m)  
         if i%3 == 0:
-            take_photo(position_lat, position_lon) 
+            formatted_position = format_position (position_lat, position_lon)
+            take_photo(formatted_position[0], formatted_position[1], formatted_position[2], formatted_position[3], i, timezone.utc, camera, photos_path) 
         sleep(x/3)
         i+=1
 
 if __name__ == '__main__':
-    box()
+    with PiCamera() as camera:
+        box(camera)
