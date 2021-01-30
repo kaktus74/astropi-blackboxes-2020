@@ -35,6 +35,7 @@ def save_to_csv(pos_lat, pos_lon, time, mf_x, mf_y, mf_z, mf_m):
 start = datetime.now(timezone.utc)
 expected = start + timedelta(seconds = 10800) #10800 s = 3 h
 #TODO uruchamanie programu w trybie testowym
+#TODO zapisz postęp
 def box():
     x = tales()
     i = 1
