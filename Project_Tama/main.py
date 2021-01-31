@@ -78,6 +78,8 @@ else:
     expected = start + timedelta(seconds = 10800) #10800 s = 3 h
 
 def box(camera):
+    mean_sum = 0.0
+    mean = 0
     logfile(os.path.dirname (os.path.realpath(__file__))+'/logs.log')
     x = time_over_fov()
     logger.info (f"I calculated the duration of the loop it is: {x}")
@@ -89,7 +91,8 @@ def box(camera):
         logger.info ("I have succesfully created the Photos folder")
     else:
         logger.info ("The Photos folder exists")
-    while expected - timedelta(seconds = 10) > datetime.now(timezone.utc):    #TO DO ile czasu w zapasie?
+    while expected - timedelta(seconds = mean + 3) > datetime.now(timezone.utc):    #TO DO ile czasu w zapasie?
+        start_now = datetime.now(timezone.utc)
         checked_position = check_position()
         logger.info ("I have checked the position")
         position_lat = checked_position[0]
@@ -104,7 +107,7 @@ def box(camera):
         magnetic_field_z = measured_magnetic_field[2]
         magnetic_field_m = measured_magnetic_field[3]
         logger.info ("I have separately saved the x, y, z values and length of the vector from the magnetic field measurements")
-        save_to_csv (position_lat, position_lon, now, magnetic_field_x, magnetic_field_y, magnetic_field_z, magnetic_field_m)  
+        save_to_csv (position_lat, position_lon, now, magnetic_field_x, magnetic_field_y, magnetic_field_z, magnetic_field_m)
         if i%3 == 0:
             logger.info ("It is time to take the photo")
             formatted_position_lat = format_position (position_lat, ['N', 'S'])
@@ -114,6 +117,18 @@ def box(camera):
             logger.info ("I have taken the photo")
         logger.info ("I'm going to sleep for 3 seconds now")
         sleep(x/3)
+        if i%3:
+            end_now_photo = datetime.now(timezone.utc)
+            duration = end_now_photo - start_now
+            mean_sum = mean_sum + duration.total_seconds()
+            mean = round (mean_sum/i, 5)
+            logger.info (f"I have calculated the mean when I take the photo, it's {mean}")
+        else:
+            end_now_no_photo = datetime.now(timezone.utc)
+            duration = end_now_no_photo - start_now
+            mean_sum = mean_sum + duration.total_seconds()
+            mean = round (mean_sum/i, 5)
+            logger.info (f"I have calculated the mean when I didn't take the photo, it's {mean}")
         i+=1
 
 if __name__ == '__main__':
