@@ -6,4 +6,4 @@ from picamera import PiCamera
 
 
 with PiCamera() as cam:
-    cam.capture (os.path.dirname(__file__) + '/random_photo.jpg')
+    cam.capture (os.path.dirname(__file__) + '/etcrandom_photo.jpg')
