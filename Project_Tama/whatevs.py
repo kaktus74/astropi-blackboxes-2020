@@ -17,5 +17,6 @@ except Exception as e:
 x = datetime.now(timezone.utc)
 sleep (3)
 y = datetime.now(timezone.utc)
-delta = y - x
-print (delta.total_seconds())
+print (round ((y-x).total_seconds(), 5))
+#qwertyuiopasdfghjklzxcvbnm
+
