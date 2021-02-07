@@ -8,14 +8,6 @@ from picamera import PiCamera
 import dateutil.tz as tz
 from logzero import logger, logfile, loglevel
 import csv
-logfile(os.path.dirname (os.path.realpath(__file__))+'/logs.log')
-#############################################################################
-name = 'ISS (ZARYA)'
-line1 = '1 25544U 98067A   21002.23397689  .00001223  00000-0  30093-4 0  9999'
-line2 = '2 25544  51.6472  83.5832 0001012 178.9624 282.3149 15.49248482262878'
-
-iss = readtle(name, line1, line2)
-#############################################################################
 
 def compute_position ():
     iss.compute()
@@ -41,6 +33,7 @@ def time_over_fov ():
 def take_and_save_photo_with_exifs (gpslat, gpslatref, gpslon, gpslonref, ordinal, timezone, camera, directory_path):
     now = datetime.now(timezone)
     camera.resolution = (1296, 972)
+    logger.debug (f"I'm saving as exif: GPS latitude ({gpslat}), GPS latitude reference ({gpslatref}), GPS longitude ({gpslon}), GPS longitude reference ({gpslonref})")
     camera.exif_tags['GPS.GPSLatitude'] = gpslat
     camera.exif_tags['GPS.GPSLatitudeRef'] = gpslatref
     camera.exif_tags['GPS.GPSLongitude'] = gpslon
@@ -96,7 +89,7 @@ def if_test():
     else:
         return False
 
-def compute_duration_time(if_test):
+def compute_duration_time(if_test, start):
     if if_test == True:
         return start + timedelta(seconds = 30)
     else:
@@ -104,7 +97,7 @@ def compute_duration_time(if_test):
 
 def box(camera):
     start = datetime.now(timezone.utc)
-    expected_finishing_time = compute_duration_time(if_test())
+    expected_finishing_time = compute_duration_time(if_test(), start)
     avg_sum = 0.0
     avg = 0
     logfile(os.path.dirname (os.path.realpath(__file__))+'/logs.log')
@@ -161,8 +154,16 @@ def box(camera):
                 logger.info (f"I have computed the average when I didn't take the photo, it's {avg}")
             i+=1
 
-sense = SenseHat()
+
 
 if __name__ == '__main__':
+#############################################################################
+    name = 'ISS (ZARYA)'
+    line1 = '1 25544U 98067A   21002.23397689  .00001223  00000-0  30093-4 0  9999'
+    line2 = '2 25544  51.6472  83.5832 0001012 178.9624 282.3149 15.49248482262878'
+    iss = readtle(name, line1, line2)
+#############################################################################
+    sense = SenseHat()
+    logfile(os.path.dirname (os.path.realpath(__file__))+'/logs.log')
     with PiCamera() as camera:
         box(camera)
