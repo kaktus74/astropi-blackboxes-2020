@@ -9,7 +9,6 @@ import dateutil.tz as tz
 from logzero import logger, logfile, loglevel
 import csv
 logfile(os.path.dirname (os.path.realpath(__file__))+'/logs.log')
-sense = SenseHat()
 #############################################################################
 name = 'ISS (ZARYA)'
 line1 = '1 25544U 98067A   21002.23397689  .00001223  00000-0  30093-4 0  9999'
@@ -31,7 +30,6 @@ def format_position(angle, lon_or_lat):
     else:
         angle_ref = lon_or_lat[1]
     angle_formatted = angle[0]+'/1,'+angle[1]+'/1,'+''.join(angle[2].split('.'))+'/10'
-    print (angle_formatted)
     return [angle_formatted, angle_ref]
 
 
@@ -43,7 +41,6 @@ def time_over_fov ():
 def take_and_save_photo_with_exifs (gpslat, gpslatref, gpslon, gpslonref, ordinal, timezone, camera, directory_path):
     now = datetime.now(timezone)
     camera.resolution = (1296, 972)
-    print(gpslat, gpslatref, gpslon, gpslonref)
     camera.exif_tags['GPS.GPSLatitude'] = gpslat
     camera.exif_tags['GPS.GPSLatitudeRef'] = gpslatref
     camera.exif_tags['GPS.GPSLongitude'] = gpslon
@@ -86,27 +83,35 @@ def save_data_to_csv(writer, index, gpslat, gpslon, time, magneticfield_x, magne
 def compute_average (avg_sum, avg_factor, start_time):
     now = datetime.now(timezone.utc)
     time_between_start_and_now = (now - start_time).total_seconds()
-    print (time_between_start_and_now)
     avg_sum = avg_sum + time_between_start_and_now
     return [round (avg_sum/avg_factor, 5), avg_sum]
 
 
 
 # TODO datetime.now() + timedelta(sec
-start = datetime.now(timezone.utc)
-if len(sys.argv) > 1:
-    if sys.argv[1] == 'test':
-        expected_finishing_time = start + timedelta(seconds = 30)
-else:
-    expected_finishing_time = start + timedelta(seconds = 10800) #10800 s = 3 h
+def if_test():
+    if len(sys.argv) > 1:
+        if sys.argv[1] == 'test':
+            return True
+    else:
+        return False
+
+def compute_duration_time(if_test):
+    if if_test == True:
+        return start + timedelta(seconds = 30)
+    else:
+        return start + timedelta(seconds = 10800)
 
 def box(camera):
+    start = datetime.now(timezone.utc)
+    expected_finishing_time = compute_duration_time(if_test())
     avg_sum = 0.0
     avg = 0
     logfile(os.path.dirname (os.path.realpath(__file__))+'/logs.log')
     #TODO - x name
-    x = time_over_fov()
-    logger.info (f"I have computed the time between taking photos, it is: {x}")
+    time_between_photos = time_over_fov()
+    time_between_magnetic_field_measurements = time_between_photos/3
+    logger.info (f"I have computed the time between taking photos, it is: {time_between_photos}")
     i = 1
     photos_path = os.path.dirname (os.path.realpath(__file__))+'/Photos'
     if os.path.exists(photos_path) == False:
@@ -143,7 +148,7 @@ def box(camera):
                 take_and_save_photo_with_exifs (formatted_position_lat[0], formatted_position_lat[1], formatted_position_lon[0], formatted_position_lon[1], i, timezone.utc, camera, photos_path) 
                 logger.info ("I have taken the photo")
             logger.info ("I'm going to sleep for 3 seconds now")
-            sleep(x/3)
+            sleep(time_between_magnetic_field_measurements)
             if i%3:
                 avg_and_sum = compute_average (avg_sum, i, start_time)
                 avg = avg_and_sum[0]
@@ -156,7 +161,8 @@ def box(camera):
                 logger.info (f"I have computed the average when I didn't take the photo, it's {avg}")
             i+=1
 
-if __name__ == '__main__':
+sense = SenseHat()
 
+if __name__ == '__main__':
     with PiCamera() as camera:
         box(camera)
