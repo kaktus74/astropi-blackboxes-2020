@@ -38,6 +38,7 @@ def take_and_save_photo_with_exifs (gpslat, gpslatref, gpslon, gpslonref, ordina
     camera.exif_tags['GPS.GPSLatitudeRef'] = gpslatref
     camera.exif_tags['GPS.GPSLongitude'] = gpslon
     camera.exif_tags['GPS.GPSLongitudeRef'] = gpslonref
+    camera.exif_tags['IFD0.ImageDescription'] = "Copyrights: Black Boxes; Beaver smells like beaver"       ##@Piotr
     logger.info ("I am taking the photo")
     try:
         camera.capture(directory_path + '/{0:04}_{1}.jpg'.format(ordinal, now.strftime('%Y_%m_%d_%H_%M')))
@@ -73,11 +74,15 @@ def save_data_to_csv(writer, index, gpslat, gpslon, time, magneticfield_x, magne
         logger.error (f'An error "{e}" occured. Data could not have been saved')
     sleep(0.005)
 
-def compute_average (avg_sum, avg_factor, start_time):
-    now = datetime.now(timezone.utc)
-    time_between_start_and_now = (now - start_time).total_seconds()
-    avg_sum = avg_sum + time_between_start_and_now
-    return [round (avg_sum/avg_factor, 5), avg_sum]
+##def compute_average (avg_sum, avg_factor, start_time):
+##    now = datetime.now(timezone.utc)
+##    time_between_start_and_now = (now - start_time).total_seconds()
+##    avg_sum = avg_sum + time_between_start_and_now
+##    return [round (avg_sum/avg_factor, 5), avg_sum]
+
+def compute_maximum_loop_duration (start_time, previous_max_loop_duration):
+    current_duration = datetime.now(timezone.utc) - start_time
+    return max (current_duration.total_seconds(), previous_max_loop_duration)
 
 
 
@@ -91,7 +96,7 @@ def if_test():
 
 def compute_duration_time(if_test, start):
     if if_test == True:
-        return start + timedelta(seconds = 30)
+        return start + timedelta(seconds = 250)
     else:
         return start + timedelta(seconds = 10800)
 
@@ -100,8 +105,10 @@ def box(camera):
     expected_finishing_time = compute_duration_time(if_test(), start)
     avg_sum = 0.0
     avg = 0
+    safety_buffer_sec = 180
+    maximum_loop_duration = 0
+    #TODO maximal duration of the loop
     logfile(os.path.dirname (os.path.realpath(__file__))+'/logs.log')
-    #TODO - x name
     time_between_photos = time_over_fov()
     time_between_magnetic_field_measurements = time_between_photos/3
     logger.info (f"I have computed the time between taking photos, it is: {time_between_photos}")
@@ -116,7 +123,8 @@ def box(camera):
     with open (os.path.dirname(os.path.realpath(__file__))+'/data.csv', 'a') as file:
         writer = csv.writer(file, delimiter=';',quoting=csv.QUOTE_MINIMAL)
         write_headline_csv(writer)
-        while expected_finishing_time - timedelta(seconds = avg) > datetime.now(timezone.utc): 
+        while expected_finishing_time - timedelta(seconds = safety_buffer_sec + maximum_loop_duration) > datetime.now(timezone.utc):
+            logger.info (f"I'm starting the loop number {i}")
             start_time = datetime.now(timezone.utc)
             computed_position = compute_position()
             logger.info ("I have computed the position")
@@ -142,21 +150,21 @@ def box(camera):
                 logger.info ("I have taken the photo")
             logger.info ("I'm going to sleep for 3 seconds now")
             sleep(time_between_magnetic_field_measurements)
-            if i%3:
-                avg_and_sum = compute_average (avg_sum, i, start_time)
-                avg = avg_and_sum[0]
-                avg_sum = avg_and_sum[1]
-                logger.info (f"I have computed the average when I take the photo, it's {avg}")
-            else:
-                avg_and_sum = compute_average (avg_sum, i, start_time)
-                avg = avg_and_sum[0]
-                avg_sum = avg_and_sum[1]
-                logger.info (f"I have computed the average when I didn't take the photo, it's {avg}")
+            maximum_loop_duration = compute_maximum_loop_duration (start_time, maximum_loop_duration)
             i+=1
 
 
 
 if __name__ == '__main__':
+    logfile(os.path.dirname (os.path.realpath(__file__))+'/logs.log')
+    logger.info ('''We are staring our experiment. We will be saving magnetic field measurements and photos to analyse
+them and search for connections between magnetic field and many factors, such as terrain. The
+experiment is run by the team Black Boxes.''')
+    logger.info (' ____  _            _      ____')
+    logger.info ('| __ )| | __ _  ___| | __ | __ )  _____  _____  ___')
+    logger.info ('|  _ \| |/ _` |/ __| |/ / |  _ \ / _ \ \/ / _ \/ __|')
+    logger.info ('| |_) | | (_| | (__|   <  | |_) | (_) >  <  __/\__ \\')
+    logger.info ('|____/|_|\__,_|\___|_|\_\ |____/ \___/_/\_\___||___/')
 #############################################################################
     name = 'ISS (ZARYA)'
     line1 = '1 25544U 98067A   21002.23397689  .00001223  00000-0  30093-4 0  9999'
@@ -164,6 +172,5 @@ if __name__ == '__main__':
     iss = readtle(name, line1, line2)
 #############################################################################
     sense = SenseHat()
-    logfile(os.path.dirname (os.path.realpath(__file__))+'/logs.log')
     with PiCamera() as camera:
         box(camera)
