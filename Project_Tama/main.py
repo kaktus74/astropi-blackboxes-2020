@@ -8,14 +8,18 @@ from picamera import PiCamera
 import dateutil.tz as tz
 from logzero import logger, logfile, loglevel
 import csv
+# Imports
+TIME_OVER_FOV = 23.43
 
 def compute_position ():
+    """When given an object computed using TLE lines, this function will compute the object's position"""
     iss.compute()
     sublat = str(iss.sublat)
     sublon = str(iss.sublong)
     return (sublat, sublon)
 
 def format_position(angle, lon_or_lat):
+    """"""
     angle = angle.split(':')
     if int(angle[0]) >= 0:
         angle_ref = lon_or_lat [0]
@@ -25,27 +29,38 @@ def format_position(angle, lon_or_lat):
     return [angle_formatted, angle_ref]
 
 
-def time_over_fov ():
-    overlap_factor = 1
-    time = overlap_factor * 23.43
-    return time
-
 def take_and_save_photo_with_exifs (gpslat, gpslatref, gpslon, gpslonref, ordinal, timezone, camera, directory_path):
+    """This function takes photos and saves the gps position of the place the were taken at as their exif, as well as the ordinal number of the loop's turn they were taken
+        Keyword arguments:
+        gpslat         -- the latitude angle of ISS at the moment of taking the photo 
+        gpslatref      -- the latitude reference (North/South) of ISS at the moment of taking the photo
+        gpslon         -- the longitude angle of ISS at the moment of taking the photo 
+        hgpislonref    -- the longitude reference (North/South) of ISS at the moment of taking the photo
+        ordinal        -- the number of current loop's turn
+        timezone       -- the UTC timezone object
+        camera         -- SenseHat's camera object
+        directory_path -- the path of the directory the photos are saved in
+        """
     now = datetime.now(timezone)
-    camera.resolution = (1296, 972)
+    camera.resolution = (1920, 1080)
     logger.debug (f"I'm saving as exif: GPS latitude ({gpslat}), GPS latitude reference ({gpslatref}), GPS longitude ({gpslon}), GPS longitude reference ({gpslonref})")
     camera.exif_tags['GPS.GPSLatitude'] = gpslat
     camera.exif_tags['GPS.GPSLatitudeRef'] = gpslatref
     camera.exif_tags['GPS.GPSLongitude'] = gpslon
     camera.exif_tags['GPS.GPSLongitudeRef'] = gpslonref
-    camera.exif_tags['IFD0.ImageDescription'] = "Copyrights: Black Boxes; Beaver smells like beaver"       ##@Piotr
+    camera.exif_tags['IFD0.ImageDescription'] = "Copyrights: Black Boxes; Pac, pac"
     logger.info ("I am taking the photo")
     try:
-        camera.capture(directory_path + '/{0:04}_{1}.jpg'.format(ordinal, now.strftime('%Y_%m_%d_%H_%M')))
+        camera.capture(directory_path + '/{0:04}_{1}.jpg'.format(ordinal, now.strft   ime('%Y_%m_%d_%H_%M')))
     except Exception as e:
         logger.error (f'An error "{e}" occured. Photo could not have been saved')
 
 def measure_magnetic_field (sensehat):
+    """
+    This function measures the magnetic field, using SenseHat, and computes the average vector of magnetic field's x, y, z vectors
+    Keyword arguments:
+    SenseHat -- SenseHat's object used for making measurements
+"""
     sensed = sensehat.get_compass_raw()
     x = sensed['x']
     y = sensed['y']
@@ -58,6 +73,10 @@ def measure_magnetic_field (sensehat):
     return (x, y, z, m)
 
 def write_headline_csv(writer):
+    """This function writes a headline for the csv file
+        Keyword arguments:
+        writer -- the file's writer
+    """
     try:
         headline = ('index', 'time', 'lat', 'lon', 'x', 'y', 'z', 'm')
         writer.writerow(headline)
@@ -65,6 +84,17 @@ def write_headline_csv(writer):
         logger.error (f'An error "{e}" occured. Headline could not have been saved')
 
 def save_data_to_csv(writer, index, gpslat, gpslon, time, magneticfield_x, magneticfield_y, magneticfield_z, magneticfield_m):
+    """This function is saving data given in arguments to a csv file
+        writer -- the file's writer
+        index  -- the ordinal number of the current loop turn
+        gpslat -- current latitude of ISS
+        gpslon -- current longitude of ISS
+        time   -- current time
+        magneticfield_x -- the value of vector in x direction
+        magneticfield_y -- the value of vector in y direction
+        magneticfield_z -- the value of vector in z direction
+        magneticfield_m -- the avarge value of the vectors
+        """
     logger.info("I'm saving to csv.")
     try:
         formatedtime = time.strftime('%Y/%m/%d %H:%M:%S.%f')
@@ -81,13 +111,18 @@ def save_data_to_csv(writer, index, gpslat, gpslon, time, magneticfield_x, magne
 ##    return [round (avg_sum/avg_factor, 5), avg_sum]
 
 def compute_maximum_loop_duration (start_time, previous_max_loop_duration):
+    """This function is computing maximum duration of loop
+        Keyword argument:
+        start_time -- the starting time of current turn
+        previous_max_loop_duration -- the maximum duration of all previous turns
+        """
     current_duration = datetime.now(timezone.utc) - start_time
     return max (current_duration.total_seconds(), previous_max_loop_duration)
 
 
 
-# TODO datetime.now() + timedelta(sec
 def if_test():
+    """The function checking if the call is final or testing, based on the programme arguments"""
     if len(sys.argv) > 1:
         if sys.argv[1] == 'test':
             return True
@@ -95,23 +130,31 @@ def if_test():
         return False
 
 def compute_duration_time(if_test, start):
+    """This function computes the duration time of the main loop, depending on if the call is final or testing.
+        Keyword arguments:
+        if_test -- a True/False value indicating if the call is final or testing
+        start   -- the starting time of the loop
+        """"
     if if_test == True:
         return start + timedelta(seconds = 250)
     else:
         return start + timedelta(seconds = 10800)
 
-def box(camera):
+def main(camera, time_between_photos=TIME_OVER_FOV):
+    """The main fuction containing the loop which makes measurements
+        Keyword arguments:
+        camera -- SenseHat's camera object
+        time_between_photos -- previously computed constant, which indicates the time between taking photos; computed using Thales' theorem
+        """
     start = datetime.now(timezone.utc)
     expected_finishing_time = compute_duration_time(if_test(), start)
     avg_sum = 0.0
     avg = 0
     safety_buffer_sec = 180
     maximum_loop_duration = 0
-    #TODO maximal duration of the loop
     logfile(os.path.dirname (os.path.realpath(__file__))+'/logs.log')
-    time_between_photos = time_over_fov()
     time_between_magnetic_field_measurements = time_between_photos/3
-    logger.info (f"I have computed the time between taking photos, it is: {time_between_photos}")
+    logger.info (f"I have computed the time between making magnetic field measurements, it is: {time_between_magnetic_field_measurements}")
     i = 1
     photos_path = os.path.dirname (os.path.realpath(__file__))+'/Photos'
     if os.path.exists(photos_path) == False:
@@ -141,6 +184,7 @@ def box(camera):
             magnetic_field_m = measured_magnetic_field[3]
             logger.info ("I have separately saved the x, y, z values and length of the vector from the magnetic field measurements")
             save_data_to_csv (writer, i, position_lat, position_lon, now, magnetic_field_x, magnetic_field_y, magnetic_field_z, magnetic_field_m)
+            file.flush()
             if i%3 == 0:
                 logger.info ("It is time to take the photo")
                 formatted_position_lat = format_position (position_lat, ['N', 'S'])
@@ -167,10 +211,11 @@ experiment is run by the team Black Boxes.''')
     logger.info ('|____/|_|\__,_|\___|_|\_\ |____/ \___/_/\_\___||___/')
 #############################################################################
     name = 'ISS (ZARYA)'
-    line1 = '1 25544U 98067A   21002.23397689  .00001223  00000-0  30093-4 0  9999'
-    line2 = '2 25544  51.6472  83.5832 0001012 178.9624 282.3149 15.49248482262878'
+    line1 = '1 25544U 98067A   21044.24238633  .00000914  00000-0  24782-4 0  9993'
+    line2 = '2 25544  51.6437 235.7688 0002867   6.5121 158.4468 15.48962733269387'
+
     iss = readtle(name, line1, line2)
 #############################################################################
     sense = SenseHat()
     with PiCamera() as camera:
-        box(camera)
+        main(camera)
