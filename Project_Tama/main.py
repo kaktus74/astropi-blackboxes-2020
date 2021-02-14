@@ -1,3 +1,19 @@
+# Authors             : Lena Zadrozna (Aishien), Stanislaw Piasecki (Hugin), Mateusz Ciszewski (MatHie), Piotr Kedzior (Beaver)
+# Supervisor          : Grzegorz Zadrozny (Kaktus74)
+# Mission Space Lab   : Life On Earth
+# Team                : Black Boxes (polish translation: "czarne kartony")
+# Team code           : bboxes
+# Date of first coding: 
+# Location            : Szczecin, Poland
+# This code is deticated to all beavers!
+# Beaver is not main person in this project!
+#              ___
+#          .="   "=._.---.
+#        ."         c ' Y'`p
+#       /   ,       `.  w_/
+#       |   '-.   /     / 
+# _,..._|      )_-\ \_=.\
+#`-....-'`------)))`=-'"`'"
 from sense_hat import SenseHat
 from time import sleep
 from datetime import datetime, timezone, timedelta
@@ -24,6 +40,7 @@ def format_position(angle, lon_or_lat):
         angle_ref = lon_or_lat [0]
     else:
         angle_ref = lon_or_lat[1]
+        angle[0] = str(int(angle[0]) * (-1))
     angle_formatted = angle[0]+'/1,'+angle[1]+'/1,'+''.join(angle[2].split('.'))+'/10'
     return [angle_formatted, angle_ref]
 
@@ -47,7 +64,7 @@ def take_and_save_photo_with_exifs (gpslat, gpslatref, gpslon, gpslonref, ordina
     camera.exif_tags['GPS.GPSLatitudeRef'] = gpslatref
     camera.exif_tags['GPS.GPSLongitude'] = gpslon
     camera.exif_tags['GPS.GPSLongitudeRef'] = gpslonref
-    camera.exif_tags['IFD0.ImageDescription'] = "Copyrights: Black Boxes; Pac, pac"
+    camera.exif_tags['IFD0.ImageDescription'] = "Copyrights: Black Boxes"
     logger.info ("I am taking the photo")
     try:
         camera.capture(directory_path + '/{0:04}_{1}.jpg'.format(ordinal, now.strftime('%Y_%m_%d_%H_%M')))
