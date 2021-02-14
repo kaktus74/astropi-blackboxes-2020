@@ -19,7 +19,6 @@ def compute_position ():
     return (sublat, sublon)
 
 def format_position(angle, lon_or_lat):
-    """"""
     angle = angle.split(':')
     if int(angle[0]) >= 0:
         angle_ref = lon_or_lat [0]
@@ -51,7 +50,7 @@ def take_and_save_photo_with_exifs (gpslat, gpslatref, gpslon, gpslonref, ordina
     camera.exif_tags['IFD0.ImageDescription'] = "Copyrights: Black Boxes; Pac, pac"
     logger.info ("I am taking the photo")
     try:
-        camera.capture(directory_path + '/{0:04}_{1}.jpg'.format(ordinal, now.strft   ime('%Y_%m_%d_%H_%M')))
+        camera.capture(directory_path + '/{0:04}_{1}.jpg'.format(ordinal, now.strftime('%Y_%m_%d_%H_%M')))
     except Exception as e:
         logger.error (f'An error "{e}" occured. Photo could not have been saved')
 
@@ -134,7 +133,7 @@ def compute_duration_time(if_test, start):
         Keyword arguments:
         if_test -- a True/False value indicating if the call is final or testing
         start   -- the starting time of the loop
-        """"
+        """
     if if_test == True:
         return start + timedelta(seconds = 250)
     else:
