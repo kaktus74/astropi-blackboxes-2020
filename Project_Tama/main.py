@@ -24,6 +24,7 @@ from picamera import PiCamera
 import dateutil.tz as tz
 from logzero import logger, logfile, loglevel
 import csv
+from pathlib import Path
 # Imports
 TIME_OVER_FOV = 23.43
 #t = s / v = (x m/px * 1080 px) / (Earth's perimeter / station's rotation time) = 1080x / (40 075 000 / 5 400)
@@ -74,7 +75,7 @@ def take_and_save_photo_with_exifs (gpslat, gpslatref, gpslon, gpslonref, ordina
     camera.exif_tags['IFD0.ImageDescription'] = "Copyrights: Black Boxes"
     logger.info ("I am taking the photo")
     try:
-        camera.capture(directory_path + '/{0:04}_{1}.jpg'.format(ordinal, now.strftime('%Y_%m_%d_%H_%M')))
+        camera.capture(str(directory_path) + '/image_{0:04}_{1}.jpg'.format(ordinal, now.strftime('%Y_%m_%d_%H_%M')))
     except Exception as e:
         logger.error (f'An error "{e}" occured. Photo could not have been saved')
 
@@ -156,11 +157,12 @@ def compute_duration_time(if_test, start):
     else:
         return start + timedelta(seconds = 10800)
 
-def main(camera, time_between_photos=TIME_OVER_FOV):
+def main(camera, current_dir_path, time_between_photos=TIME_OVER_FOV):
     """The main fuction containing the loop which makes measurements
         Keyword arguments:
         camera -- SenseHat's camera object
         time_between_photos -- previously computed constant, which indicates the time between taking photos; computed using Thales' theorem
+        current_dir_path -- the path of current directory
         """
     start = datetime.now(timezone.utc)
     expected_finishing_time = compute_duration_time(if_test(), start)
@@ -168,18 +170,18 @@ def main(camera, time_between_photos=TIME_OVER_FOV):
     avg = 0
     safety_buffer_sec = 180
     maximum_loop_duration = 0
-    logfile(os.path.dirname (os.path.realpath(__file__))+'/logs.log')
+    #logfile(os.path.dirname (os.path.realpath(__file__))+'/logs.log')
     time_between_magnetic_field_measurements = time_between_photos/3
     logger.info (f"I have computed the time between making magnetic field measurements, it is: {time_between_magnetic_field_measurements}")
     i = 1
-    photos_path = os.path.dirname (os.path.realpath(__file__))+'/Photos'
-    if os.path.exists(photos_path) == False:
-        logger.info ("The Photos folder doesn't exist, I'm going to create it")
-        os.mkdir(photos_path)
-        logger.info ("I have succesfully created the Photos folder")
-    else:
-        logger.info ("The Photos folder exists")
-    with open (os.path.dirname(os.path.realpath(__file__))+'/data.csv', 'a') as file:
+    #photos_path = os.path.dirname (os.path.realpath(__file__))+'/Photos'
+##    if os.path.exists(photos_path) == False:
+##        logger.info ("The Photos folder doesn't exist, I'm going to create it")
+##        os.mkdir(photos_path)
+##        logger.info ("I have succesfully created the Photos folder")
+##    else:
+##        logger.info ("The Photos folder exists")
+    with open (str(current_dir_path)+'/data01.csv', 'a') as file:
         writer = csv.writer(file, delimiter=';',quoting=csv.QUOTE_MINIMAL)
         write_headline_csv(writer)
         while expected_finishing_time - timedelta(seconds = safety_buffer_sec + maximum_loop_duration) > datetime.now(timezone.utc):
@@ -206,7 +208,7 @@ def main(camera, time_between_photos=TIME_OVER_FOV):
                 formatted_position_lat = format_position (position_lat, ['N', 'S'])
                 formatted_position_lon = format_position (position_lon, ['E', 'W'])
                 logger.info ("I have formatted the position into the EXIF format")
-                take_and_save_photo_with_exifs (formatted_position_lat[0], formatted_position_lat[1], formatted_position_lon[0], formatted_position_lon[1], i, timezone.utc, camera, photos_path) 
+                take_and_save_photo_with_exifs (formatted_position_lat[0], formatted_position_lat[1], formatted_position_lon[0], formatted_position_lon[1], i, timezone.utc, camera, current_dir_path) 
                 logger.info ("I have taken the photo")
             logger.info ("I'm going to sleep for 3 seconds now")
             sleep(time_between_magnetic_field_measurements)
@@ -216,10 +218,9 @@ def main(camera, time_between_photos=TIME_OVER_FOV):
 
 
 if __name__ == '__main__':
-    logfile(os.path.dirname (os.path.realpath(__file__))+'/logs.log')
-    logger.info ('''We are staring our experiment. We will be saving magnetic field measurements and photos to analyse
-them and search for connections between magnetic field and many factors, such as terrain. The
-experiment is run by the team Black Boxes.''')
+    current_dir_path = Path(__file__).parent.resolve()
+    logfile(str(current_dir_path)+'/bboxes.log')
+    logger.info ("""We are staring our experiment. We will be saving magnetic field measurements and photos to analyse them and search for connections between magnetic field and many factors, such as terrain. The experiment is run by the team Black Boxes.""")
     logger.info (' ____  _            _      ____')
     logger.info ('| __ )| | __ _  ___| | __ | __ )  _____  _____  ___')
     logger.info ('|  _ \| |/ _` |/ __| |/ / |  _ \ / _ \ \/ / _ \/ __|')
@@ -234,4 +235,4 @@ experiment is run by the team Black Boxes.''')
     ##########################################################################
     sense = SenseHat()
     with PiCamera() as camera:
-        main(camera)
+        main(camera, current_dir_path)
