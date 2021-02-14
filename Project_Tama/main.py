@@ -10,6 +10,8 @@ from logzero import logger, logfile, loglevel
 import csv
 # Imports
 TIME_OVER_FOV = 23.43
+#t = s / v = (x m/px * 1080 px) / (Earth's perimeter / station's rotation time) = 1080x / (40 075 000 / 5 400)
+#t = 1080x / 7 421 = 172 800 / 7 421 = 23.285
 
 def compute_position ():
     """When given an object computed using TLE lines, this function will compute the object's position"""
@@ -19,6 +21,11 @@ def compute_position ():
     return (sublat, sublon)
 
 def format_position(angle, lon_or_lat):
+    """
+    This function formats postion when given an angle and a list with two characters depending on if the angle describes longitude or latitude.
+    angle -- angle
+    lon_or_lat -- a list of two values (N and S or E and W), depending on if the angle describes longitude or latitude
+    """
     angle = angle.split(':')
     if int(angle[0]) >= 0:
         angle_ref = lon_or_lat [0]
@@ -65,9 +72,7 @@ def measure_magnetic_field (sensehat):
     y = sensed['y']
     z = sensed['z']
     m = pow((x*x + y*y + z*z), 1/3)
-    #tab.append (zczytane x, zczytane y, zczytane z)
     logger.info ("Computing the length of magnetic field's vector")
-    #m = pierwiastek sześcienny z sumy sześcianów x y z
     
     return (x, y, z, m)
 
@@ -103,11 +108,6 @@ def save_data_to_csv(writer, index, gpslat, gpslon, time, magneticfield_x, magne
         logger.error (f'An error "{e}" occured. Data could not have been saved')
     sleep(0.005)
 
-##def compute_average (avg_sum, avg_factor, start_time):
-##    now = datetime.now(timezone.utc)
-##    time_between_start_and_now = (now - start_time).total_seconds()
-##    avg_sum = avg_sum + time_between_start_and_now
-##    return [round (avg_sum/avg_factor, 5), avg_sum]
 
 def compute_maximum_loop_duration (start_time, previous_max_loop_duration):
     """This function is computing maximum duration of loop
@@ -208,13 +208,13 @@ experiment is run by the team Black Boxes.''')
     logger.info ('|  _ \| |/ _` |/ __| |/ / |  _ \ / _ \ \/ / _ \/ __|')
     logger.info ('| |_) | | (_| | (__|   <  | |_) | (_) >  <  __/\__ \\')
     logger.info ('|____/|_|\__,_|\___|_|\_\ |____/ \___/_/\_\___||___/')
-#############################################################################
+    #########################################################################
     name = 'ISS (ZARYA)'
     line1 = '1 25544U 98067A   21044.24238633  .00000914  00000-0  24782-4 0  9993'
     line2 = '2 25544  51.6437 235.7688 0002867   6.5121 158.4468 15.48962733269387'
 
     iss = readtle(name, line1, line2)
-#############################################################################
+    ##########################################################################
     sense = SenseHat()
     with PiCamera() as camera:
         main(camera)
