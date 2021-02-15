@@ -30,18 +30,21 @@ TIME_OVER_FOV = 23.43
 #t = s / v = (x m/px * 1080 px) / (Earth's perimeter / station's rotation time) = 1080x / (40 075 000 / 5 400)
 #t = 1080x / 7 421 = 172 800 / 7 421 = 23.285
 
-def compute_position ():
-    """When given an object computed using TLE lines, this function will compute the object's position"""
+def compute_position (iss):
+    """When given an object computed using TLE lines, this function will compute the object's position
+        Keyword arguments:
+        iss -- an object computed using TLE lines
+        """
     iss.compute()
     sublat = str(iss.sublat)
     sublon = str(iss.sublong)
     return (sublat, sublon)
 
 def format_position(angle, lon_or_lat):
-    """
-    This function formats postion when given an angle and a list with two characters depending on if the angle describes longitude or latitude.
-    angle -- angle
-    lon_or_lat -- a list of two values (N and S or E and W), depending on if the angle describes longitude or latitude
+    """This function formats postion when given an angle and a list with two characters depending on if the angle describes longitude or latitude.
+        Keyword arguments:
+        angle -- angle
+        lon_or_lat -- a list of two values (N and S or E and W), depending on if the angle describes longitude or latitude
     """
     angle = angle.split(':')
     if int(angle[0]) >= 0:
@@ -157,7 +160,7 @@ def compute_duration_time(if_test, start):
     else:
         return start + timedelta(seconds = 10800)
 
-def main(camera, current_dir_path, time_between_photos=TIME_OVER_FOV):
+def main(camera, current_dir_path, iss, time_between_photos=TIME_OVER_FOV):
     """The main fuction containing the loop which makes measurements
         Keyword arguments:
         camera -- SenseHat's camera object
@@ -187,7 +190,7 @@ def main(camera, current_dir_path, time_between_photos=TIME_OVER_FOV):
         while expected_finishing_time - timedelta(seconds = safety_buffer_sec + maximum_loop_duration) > datetime.now(timezone.utc):
             logger.info (f"I'm starting the loop number {i}")
             start_time = datetime.now(timezone.utc)
-            computed_position = compute_position()
+            computed_position = compute_position(iss)
             logger.info ("I have computed the position")
             position_lat = computed_position[0]
             position_lon = computed_position[1]
@@ -235,4 +238,4 @@ if __name__ == '__main__':
     ##########################################################################
     sense = SenseHat()
     with PiCamera() as camera:
-        main(camera, current_dir_path)
+        main(camera, current_dir_path, iss)
