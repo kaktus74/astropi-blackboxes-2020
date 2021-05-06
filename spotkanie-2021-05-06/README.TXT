@@ -1,0 +1,5 @@
+- parsowanie daty
+- rzetwarzanie kolumny
+- załadowanie csv i wykreślenie wykresu
+- w parach wykreślenie wykresu z 2 różnych parametrów
+- potwierdzenie kolejnego spotkania
