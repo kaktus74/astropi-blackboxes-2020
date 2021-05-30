@@ -1,0 +1,38 @@
+- start Pasqueta 22.iv - razem ?
+- ankieta
+- jak analizować, podział zadań
+
+
+Wynik: 213 przeszło z > 400
+
+
+Dokowanie:
+
+https://www.youtube.com/watch?v=DbB2-CCrzO0 3:00:00
+
+
+Terminy:
+- 14.IV - pierwszy obrazek
+- 8.VI - deadline; może będzie przesunięty
+
+
+
+Materiał:
+- https://projects.raspberrypi.org/en/projects/astro-pi-flight-data-analysis/6
+
+Przypomnienie celu:
+- Lena?
+
+Decyzje:
+- co chcemy analizować i jak prezentować:
+  -
+ - jakie narzędzia:
+  - arkusz czy kod?
+    - python
+
+- terminy spotkań
+  - 2x w tyg?
+- odpalenie rpi online: mateusz i ja
+  - mateusz + test dzisiaj #3
+  - kaktus + test dzisiaj Stasiek test #2
+
