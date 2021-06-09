@@ -6,11 +6,12 @@ from latconv import to_coord
 with open("all_photos_classified.csv",'r') as f:
     dane1 = list(reader(f))[1:]
     #dane2 = [data[0].split(',') for data in dane1]
-    print(dane1[1:5])
+    #print(dane1[1:5])
     time = [parser.parse (data[1]) for data in dane1] # [..,'2021-04-...','fdsfdsf'] => [2021-04-16...]
     lat = [to_coord(data[2]) for data in dane1]
     #print(lat)
     lon = [to_coord(data[3]) for data in dane1]
+    
     #x = [float (cases[4]) for cases in dane2]
     #y = [float (cases[5]) for cases in dane2]
     #z = [float (cases[6]) for cases in dane2]
