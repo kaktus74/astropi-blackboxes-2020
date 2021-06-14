@@ -39,7 +39,7 @@ with open("all_photos_classified.csv",'r') as f:
 
     
     
-    fig, ax = pyplot.subplots(2,3) # ax = axis
+    fig, ax = pyplot.subplots(3,2) # ax = axis
     #fig, ax = pyplot.subplots(2) # ax = [axis0, axis2]
     
     #ax.plot(time, x, label='x')#m2 = m-(lon*0.1)
@@ -57,12 +57,12 @@ with open("all_photos_classified.csv",'r') as f:
     
     ax[0][0].scatter(day_night, m, label="day or night")
     ax[0][0].set_title("day or night")
-    ax[0][1].scatter(water, m, label="water")
-    ax[0][1].set_title("woda")
-    ax[0][2].scatter(hills, m, label="mountains")
-    ax[0][2].set_title("górki")
-    ax[1][0].scatter(lat, m)
-    ax[1][0].set_title("lat")
+    ax[1][0].scatter(water, m, label="water")
+    ax[1][0].set_title("woda")
+    ax[2][0].scatter(hills, m, label="mountains")
+    ax[2][0].set_title("górki")
+    ax[0][1].scatter(lat, m)
+    ax[0][1].set_title("lat")
     ax[1][1].scatter(lon, m)
     ax[1][1].set_title("lon")
     #ax[1][2].scatter()
