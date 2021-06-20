@@ -9,7 +9,7 @@ from datetime import datetime
 #2021/04/17 22:47:00,-0.4847688674926758,-9.58865737915039,50.05764389038086,13.747065049470038
 #...
 
-OUTFILE = '/home/kaktus74/astropi2021/astropi-blackboxes-2020/spotkanie-2021-06-06/gooddanesun.csv'
+OUTFILE = '/home/kaktus74/astropi2021/astropi-blackboxes-2020/spotkanie-2021-06-17/gooddanesun.csv'
 INPUT_FILES = ['/home/kaktus74/astropi2021/astropi-blackboxes-2020/spotkanie-2021-05-27/20210416_ace_mag_1m.txt', '/home/kaktus74/astropi2021/astropi-blackboxes-2020/spotkanie-2021-05-27/20210417_ace_mag_1m.txt']
 
 
@@ -26,10 +26,10 @@ def data_for_us(fname,outfile):
                 day = int(current_line[8:10])
                 hour = int(current_line[12:14])
                 minute = int(current_line[14:16])
-                bx = float(current_line[41:45])
-                by = float(current_line[50:54])
-                bz = float(current_line[59:63])
-                bt = float(current_line[66:69])
+                bx = float(current_line[40:45])
+                by = float(current_line[49:54])
+                bz = float(current_line[58:63])
+                bt = float(current_line[65:69])
                 #print(bx, by, bz, bt)
                 #print(f'{year}/{month}/{day}')
                 #print('%d/{month}/{day}')
